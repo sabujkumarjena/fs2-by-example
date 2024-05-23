@@ -13,6 +13,17 @@ object Create extends IOApp.Simple :
     if c == 'z' + 1 then IO.println("Finishing") >> IO.pure(None) else IO.println(s"Producing $c") >> IO.pure(Some((c, (c + 1).toChar)))
   }
 
+  //Exercise- pagination
+  val data = List.range(1, 100)
+  val pageSize = 20
+
+  def fetchPage(pageNumber: Int): IO[List[Int]] =
+    val start = pageNumber * pageSize
+    val end = start + pageSize
+    IO.println(s"Fetching page $pageNumber").as(data.slice(start, end))
+
+  
+
   override def run: IO[Unit] =
     //IO.println("sabuj")
     //s.compile.toList.flatMap(IO.println)
