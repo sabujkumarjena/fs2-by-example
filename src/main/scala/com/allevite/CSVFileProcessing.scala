@@ -71,9 +71,25 @@ object CSVFileProcessing extends IOApp.Simple :
       .compile
       .toList
 
+  def readSetsAsStreamV4(filename: String, predicate: MySet => Boolean = _ => true, limit: Int = 10): IO[List[MySet]] =
+    Files[IO]
+      .readAll(Path(filename))
+      .through(text.utf8.decode)
+      .through(text.lines)
+      .map(parseLine)
+      .evalTap(IO.println) //observe with a function
+      .metered(1.second) //throttle the stream, doesn't drop element
+      .unNone
+      .filter(predicate)
+      .take(limit) // Stream[IO, MySet]
+      .compile
+      .toList
+
   override def run: IO[Unit] =
     val filename = "sets.csv"
     //IO.println(readSets(filename))
     //readSetsAsStream(filename).map(println)
 //    readSetsAsStreamV2(filename).map(println)
-    readSetsAsStreamV3(filename).map(println)
+    //readSetsAsStreamV3(filename).map(println)
+
+    readSetsAsStreamV4(filename).map(println)
