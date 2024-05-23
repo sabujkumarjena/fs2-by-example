@@ -22,7 +22,14 @@ object Create extends IOApp.Simple :
     val end = start + pageSize
     IO.println(s"Fetching page $pageNumber").as(data.slice(start, end))
 
-  
+  def fetchAll(): Stream[IO, Int] =
+    Stream.unfoldEval(0){ pageNo =>
+      fetchPage(pageNo).map { list =>
+        if list.isEmpty then None else Some(Stream.emits(list), pageNo + 1)
+      }
+    }.flatten
+
+
 
   override def run: IO[Unit] =
     //IO.println("sabuj")
@@ -32,4 +39,6 @@ object Create extends IOApp.Simple :
     //s3.compile.drain
 //    s3.compile.toList.flatMap(IO.println)
    // natsEval.take(5).compile.toList.flatMap(IO.println)
-   alphabet.compile.toList.flatMap(IO.println)
+   //alphabet.compile.toList.flatMap(IO.println)
+
+   fetchAll().compile.toList.flatMap(IO.println)
