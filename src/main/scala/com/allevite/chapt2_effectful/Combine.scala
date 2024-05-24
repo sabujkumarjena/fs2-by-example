@@ -2,6 +2,7 @@ package com.allevite.chapt2_effectful
 
 import cats.effect.{IO, IOApp}
 import fs2.*
+import scala.concurrent.duration.*
 
 object Combine extends IOApp.Simple:
 
@@ -23,6 +24,16 @@ object Combine extends IOApp.Simple:
 
   val s5: Stream[IO, Int] =Stream.range(1, 100).evalFilter(_  => IO(math.random() < 0.5))
 
+  val s6: Stream[IO, Int] = Stream.exec(IO.println("start")) ++ Stream(1,2,3) ++ Stream(4,5,6) ++ Stream.exec(IO.println("Finish"))
+
+  val delayed: Stream[IO, Unit] = Stream.sleep_[IO](3.second) ++ Stream.eval(IO.println(" I am awake"))
+
+  //Exercise
+  def evalEvery[A](d: FiniteDuration)(fa: IO[A]): Stream[IO, A] =
+    (Stream.sleep_[IO](d) ++ Stream.eval(fa)).repeat
+
+
+
 
   override def run: IO[Unit] =
     s.compile.drain
@@ -30,3 +41,7 @@ object Combine extends IOApp.Simple:
     s3.compile.toList.flatMap(IO.println)
     s4.compile.toList.flatMap(IO.println)
     s5.compile.toList.flatMap(IO.println)
+    s6.compile.toList.flatMap(IO.println)
+    delayed.compile.drain
+
+    evalEvery(2.seconds)(IO.println("Hi").as(42)).take(5).compile.toList.flatMap(IO.println)
