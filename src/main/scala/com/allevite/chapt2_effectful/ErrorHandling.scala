@@ -16,10 +16,11 @@ object ErrorHandling extends IOApp.Simple:
   //Exercise
   extension [A](s: Stream[IO, A])
     def flatAttempt: Stream[IO, A] =
-      s.attempt.flatMap :
-        case Right(a) => Stream.emit(a)
-        case Left(e) => Stream.empty
-
+//      s.attempt.flatMap :
+//        case Right(a) => Stream.emit(a)
+//        case Left(e) => Stream.empty
+        s.attempt.collect:
+          case Right(v) => v
 
   override def run: IO[Unit] =
     s.compile.drain // throw exception
