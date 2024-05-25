@@ -65,7 +65,39 @@ object Pulls extends IOApp.Simple:
         case None => Pull.done
       }
       .stream
+  def drop[A](n: Int): Pipe[Pure, A, A] =  s =>
+    def go (s: Stream[Pure, A], n: Int): Pull[Pure, A, Unit] =
+      s.pull.uncons.flatMap:
+        case Some((chunk, resOfStream)) =>
+          if chunk.size < n then go(resOfStream, n - chunk.size)
+          else Pull.output(chunk.drop(n)) >> resOfStream.pull.echo
+        case None => Pull.done
+    go(s,n).stream
+  //exercise
+  def filter[A](p: A => Boolean): Pipe[Pure, A, A] = s =>
+    def go(s: Stream[Pure, A]): Pull[Pure, A, Unit] =
+      s.pull.uncons.flatMap:
+        case Some((chunk, restOfStream)) =>
+          Pull.output(chunk.filter(p)) >> go(restOfStream)
+        case None => Pull.done
+    go(s).stream
 
+  //exercise
+  def runningSun: Pipe[Pure, Int, Int] = s =>
+    s.scanChunksOpt(0){ acc =>
+      Some { chunk =>
+        val newState  =  acc + chunk.toList.map(_.asInstanceOf[Int]).sum
+        (newState, Chunk.singleton(newState))
+      }
+    }
+  //exercise
+  def runningMax: Pipe[Pure, Int, Int] = s =>
+    s.scanChunksOpt(Int.MinValue) { acc =>
+      Some { chunk =>
+        val newState = acc max chunk.map(_.asInstanceOf[Int]).foldLeft(Int.MinValue)(_ max _)
+        (newState, Chunk.singleton(newState))
+      }
+    }
 
   override def run: IO[Unit] =
     IO.println(outputPull.stream.toList)
@@ -74,3 +106,7 @@ object Pulls extends IOApp.Simple:
     skipLimit(10,10)(Stream.range(1, 100)).compile.toList.flatMap(IO.println)
     IO.println(firstChunk(s).toList)
     IO.println(s.through(firstChunkV2).toList)
+    IO.println(s.through(drop(3)).toList)
+    IO.println(s.through(filter(_ % 2 == 0)).toList)
+    IO.println(s.through(runningSun).toList) //List(3, 6, 15)
+    IO.println(s.through(runningMax).toList) //List(2, 3, 5)
