@@ -58,4 +58,24 @@ Agenda
 - - metered
 - - debounce
 - Retry
-- 
+
+Streams are MonadErrors
+
+Transforming Streams
+Agenda
+- Pull based vs Push based
+- Chunks
+- Pulls
+- Pipes
+
+Pull Based Streams
+- The stream contains a recipe to produce more elements.
+- Element are pulled from the stream when needed.
+- When our process needs no more elements, we can stop.
+
+Push Based Stream
+- The producer emits elements at its own pace and notifies subscribers.
+- The consumers subscribe to updates and provide callbacks
+
+
+
