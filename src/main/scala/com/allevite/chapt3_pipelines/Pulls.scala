@@ -23,8 +23,24 @@ object Pulls extends IOApp.Simple:
       _  <- outputPull
       _  <- outputPull2
     yield ()
+  val toPull: Stream.ToPull[Pure, Int] = s.pull
+  val echoPull: Pull[Pure, Int, Unit] = s.pull.echo
+  val takePull: Pull[Pure, Int, Option[Stream[Pure, Int]]] = s.pull.take(3)
+  val dropPull: Pull[Pure, Nothing, Option[Stream[Pure, Int]]] = s.pull.drop(3)
+
+  //Exercise - implement using pulls
+  def skipLimit[A](skip: Int, limit: Int)(s: Stream[IO, A]): Stream[IO, A] =
+    val p =
+      for
+        tailOpt <- s.pull.drop(skip)
+        _   <- tailOpt match
+          case Some(rest) => rest.pull.take(limit)
+          case None => Pull.done
+      yield ()
+    p.stream
 
   override def run: IO[Unit] =
     IO.println(outputPull.stream.toList)
     IO.println(outputPull2.stream.toList)
     IO.println(combined.stream.toList)
+    skipLimit(10,10)(Stream.range(1, 100)).compile.toList.flatMap(IO.println)
