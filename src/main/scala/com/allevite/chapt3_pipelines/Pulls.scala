@@ -39,8 +39,38 @@ object Pulls extends IOApp.Simple:
       yield ()
     p.stream
 
+  // Waits for a chunk of elements to be available in the source stream. The non-empty chunk of elements
+  // along with a new stream are provided as the resource of the returned pull. The new stream can be used
+  // for subsequent operations, like awaiting again. A None is returned as the resource of the pull
+  // upon reaching the end of the stream.
+  val unconsedRange: Pull[Pure, Nothing, Option[(Chunk[Int], Stream[Pure, Int])]] = s.pull.uncons
+
+  def firstChunk[A](s: Stream[Pure, A]): Stream[Pure, A] =
+    s.pull.uncons.flatMap {
+      case Some((chunk, restOfStream)) => Pull.output(chunk)
+      case None   => Pull.done
+    }
+      .stream
+
+  def firstChunkV2[A]: Stream[Pure, A] =>  Stream[Pure, A] = s =>
+    s.pull.uncons.flatMap {
+        case Some((chunk, restOfStream)) => Pull.output(chunk)
+        case None => Pull.done
+      }
+      .stream
+
+  def firstChunkV3[A]: Pipe[Pure, A, A] = s =>
+    s.pull.uncons.flatMap {
+        case Some((chunk, restOfStream)) => Pull.output(chunk)
+        case None => Pull.done
+      }
+      .stream
+
+
   override def run: IO[Unit] =
     IO.println(outputPull.stream.toList)
     IO.println(outputPull2.stream.toList)
     IO.println(combined.stream.toList)
     skipLimit(10,10)(Stream.range(1, 100)).compile.toList.flatMap(IO.println)
+    IO.println(firstChunk(s).toList)
+    IO.println(s.through(firstChunkV2).toList)
