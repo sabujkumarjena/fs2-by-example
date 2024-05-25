@@ -1,15 +1,15 @@
-learn fs2 by example
+# learn fs2 by example #
 
-##Pure Strem ##
+## Pure Strem ##
 
-Finte Streams
+### Finte Streams ###
 -   apply
 - empty
 - emit
 - emits
 - range
 
-Infinite streams
+### Infinite streams ###
 - iterate
 - unfold
 - constant
@@ -77,5 +77,32 @@ Push Based Stream
 - The producer emits elements at its own pace and notifies subscribers.
 - The consumers subscribe to updates and provide callbacks
 
+SUMMARY
+- fs2 streams are pull based (only emit when asked to)
+- Streams emit values in chunks
+- Pulls represent processes
+- - Useful when transforming streams
+- - Useful when transforming streams
+-  Pipes are functions from stream to streams
+- - The through operator can be used to transform a stream with a pipe
 
-
+# Concurrency #
+## Agenda ##
+- Running streams concurrently
+- - merge
+- - parJoinUnbounded
+- - Concurrently
+- Processing elements in parallel
+- - parEvalMap
+- Processing elements in parallel
+- - parEvalMap
+- Zipping streams
+- - zip
+- - zipRight
+- - parZip
+- Timed behaviour
+- - fixedRate
+- - fixedDelay
+- - awakeEvery
+- - awakeDelay
+- 
