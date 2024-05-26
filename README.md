@@ -105,4 +105,23 @@ SUMMARY
 - - fixedDelay
 - - awakeEvery
 - - awakeDelay
-- 
+### SUMMARY ###
+- There are many ways to launch streams concurrently
+- Elements in a stream can be processed in parallel
+- Zipping can help implement interesting patterns (such as metered)
+
+# COMMUNICATION #
+## AGENDA ##
+- Signals
+- - Interruption
+- - Sending values from one stream and consuming from other
+- Channels
+- - Multiple producers
+- - Buffering
+- Topic
+- - Pub/Sub model
+- - Buffering (in each subscriber) 
+- Queues
+- - Multiple producer / Multiple consumer
+- - Buffering
+- - Communication with outside world
