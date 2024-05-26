@@ -18,8 +18,41 @@ object Signals extends IOApp.Simple:
       .metered(50.millis)
       .interruptWhen(signal)
       .drain
+
+  //Exercise Cooler
+  type Temperature = Double
+  def createTemperatureSensor(alarm: SignallingRef[IO, Temperature], threshold: Temperature): Stream[IO, Nothing] =
+    Stream
+      .repeatEval(IO(Random.between(-40.0, 40.0)))
+      .evalTap(t => IO.println(f"Current temperature: $t%.1f"))
+      .evalMap(t => if t > threshold then alarm.set(t) else IO.unit)
+      .metered(300.millis)
+      .drain
+
+  def createCooler(alarm: SignallingRef[IO, Temperature]): Stream[IO, Nothing] =
+    alarm
+      .discrete //stream of latest update of signal
+      .evalMap(t => IO.println(f"$t%.1f °C is too hot! Cooling down... "))
+      .drain
+
+  val threshold = 20.0
+  val initialTemperature = 20.0
+
+  //Exercise
+  // Create a signal that emits a signal
+  //Create a temperature senor and a cooler
+  // Run them concurrently
+  // Interrupt after 3 seconds
+
+  val program = Stream.eval(SignallingRef[IO, Temperature](initialTemperature)).flatMap {alarm =>
+    val temperatureSensor = createTemperatureSensor(alarm, threshold)
+    val cooler = createCooler(alarm)
+    cooler.merge(temperatureSensor)
+  }
+
   override def run: IO[Unit] =
     Stream.eval(SignallingRef[IO, Boolean](false)).flatMap { signal =>
       worker(signal).concurrently(signaller(signal))
     }.compile.drain
 
+    program.interruptAfter(3.seconds).compile.drain
