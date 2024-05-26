@@ -125,3 +125,9 @@ SUMMARY
 - - Multiple producer / Multiple consumer
 - - Buffering
 - - Communication with outside world
+- - We can connect to the outside world
+
+## SUMMARY ##
+- Many ways to send messages between streams
+- Buffering helps deal with fast producers / slow consumers
+- 
